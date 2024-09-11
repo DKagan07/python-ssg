@@ -1,8 +1,13 @@
 """ this module holds related HTML class definitions"""
 
+# from enum import Enum
+
 
 class HTMLNode:
     """class definition of a HTML node"""
+
+    # class TextType(Enum):
+    #
 
     def __init__(self, tag, value=None, children=None, props=None):
         self.tag = tag
@@ -30,6 +35,14 @@ class HTMLNode:
         Value: {self.value}
         Children: {self.children}
         Props: {self.props}"""
+
+    def __eq__(self, node):
+        return (
+            self.tag == node.tag
+            and self.value == node.value
+            and self.children == node.children
+            and self.props == node.props
+        )
 
 
 class LeafNode(HTMLNode):
