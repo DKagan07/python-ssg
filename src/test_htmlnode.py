@@ -2,7 +2,7 @@
 
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -88,6 +88,70 @@ class TestLeafNode(unittest.TestCase):
         ln = LeafNode(None, value)
 
         self.assertEqual(ln.to_html(), result)
+
+
+class TestParentNode(unittest.TestCase):
+    def test_happy_to_html(self):
+        """tests happy path for parent to_html"""
+
+        test_children = [
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ]
+        result = "<p><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>"
+        pn = ParentNode("p", test_children, None)
+
+        self.assertEqual(pn.to_html(), result)
+
+    def test_nested_to_html(self):
+        """test nested parent in to_html"""
+
+        test_inner_parent = ParentNode("p", [LeafNode("b", "Bold inner text")])
+        test_children = [test_inner_parent]
+
+        result = "<div><p><b>Bold inner text</b></p></div>"
+        pn = ParentNode("div", test_children, None)
+
+        self.assertEqual(pn.to_html(), result)
+
+    def test_missing_tag(self):
+        """tests top parent missing tag"""
+
+        test_children = [LeafNode("b", "Bold text")]
+
+        pn = ParentNode(None, test_children, None)
+        with self.assertRaises(ValueError):
+            pn.to_html()
+
+    def test_missing_tag_in_child_parent(self):
+        """test nested parent missing tag"""
+
+        test_inner_parent = ParentNode(None, [LeafNode("b", "Bold inner text")])
+        test_children = [test_inner_parent]
+
+        pn = ParentNode("div", test_children, None)
+        with self.assertRaises(ValueError):
+            pn.to_html()
+
+    def test_missing_children(self):
+        """test missing child parameter"""
+
+        pn = ParentNode("p", None, None)
+
+        with self.assertRaises(ValueError):
+            pn.to_html()
+
+    def test_missing_children_in_child_parent(self):
+        """test missing child parameter in nested parent"""
+
+        test_inner_parent = ParentNode("p", None)
+        test_children = [test_inner_parent]
+
+        pn = ParentNode("div", test_children, None)
+        with self.assertRaises(ValueError):
+            pn.to_html()
 
 
 if __name__ == "__main__":

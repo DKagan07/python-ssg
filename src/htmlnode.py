@@ -36,7 +36,7 @@ class LeafNode(HTMLNode):
     """leaf node is a leaf html node"""
 
     def __init__(self, tag, value, props=None):
-        super().__init__(tag, value, props)
+        super().__init__(tag, value, None, props)
         self.props = props
 
     def to_html(self):
@@ -47,3 +47,23 @@ class LeafNode(HTMLNode):
             return self.value
 
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+
+
+class ParentNode(HTMLNode):
+    """parent node is a parent html node"""
+
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        if self.tag is None:
+            raise ValueError("Must have a tag")
+        if self.children is None:
+            raise ValueError("Must have children in a parent node")
+
+        total_html = f"<{self.tag}>"
+        for child in self.children:
+            # child should be of either type LeafNode or ParentNode
+            html_text = child.to_html()
+            total_html += html_text
+        return total_html + f"</{self.tag}>"
