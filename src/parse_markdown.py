@@ -59,3 +59,70 @@ def extract_markdown_links(text):
     # regex makes sure that the alt text in the [] isn't preceeded by a "!" like
     # the images syntax
     return re.findall(r"(?<!!)\[(.*?)\]\((.*?)\)", text)
+
+
+def split_nodes_images(old_nodes):
+    """split_nodes_images splits a TextNode with to a list of text and image nodes"""
+
+    result = []
+    for old_node in old_nodes:
+        if old_node.text_type != "text":
+            result.append(old_node)
+            continue
+
+        text = old_node.text
+
+        links = extract_markdown_images(text)
+        if len(links) == 0:
+            result.append(old_node)
+            continue
+
+        for link in links:
+            sections = text.split(f"![{link[0]}]({link[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("Invalid markdown, link section not closed")
+
+            if sections[0] != "":
+                result.append(TextNode(sections[0], "text"))
+
+            result.append(TextNode(link[0], "image", link[1]))
+
+            text = sections[1]
+
+        if text != "":
+            result.append(TextNode(text, "text"))
+
+    return result
+
+
+def split_nodes_link(old_nodes):
+    """split_nodes_link splits a TextNode to a list of text and link nodes"""
+    result = []
+    for old_node in old_nodes:
+        if old_node.text_type != "text":
+            result.append(old_node)
+            continue
+
+        text = old_node.text
+
+        links = extract_markdown_links(text)
+        if len(links) == 0:
+            result.append(old_node)
+            continue
+
+        for link in links:
+            sections = text.split(f"[{link[0]}]({link[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("Invalid markdown, link section not closed")
+
+            if sections[0] != "":
+                result.append(TextNode(sections[0], "text"))
+
+            result.append(TextNode(link[0], "link", link[1]))
+
+            text = sections[1]
+
+        if text != "":
+            result.append(TextNode(text, "text"))
+
+    return result

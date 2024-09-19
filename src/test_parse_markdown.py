@@ -3,6 +3,8 @@ import unittest
 from parse_markdown import (
     extract_markdown_images,
     extract_markdown_links,
+    split_nodes_images,
+    split_nodes_link,
     split_nodes_with_delimiter,
 )
 from textnode import TextNode
@@ -132,3 +134,84 @@ class TestExtractMDLinks(unittest.TestCase):
         result = extract_markdown_links(link_text)
 
         self.assertListEqual([("", "https://www.boot.dev")], result)
+
+
+class TestSplitNodesImages(unittest.TestCase):
+    def test_images_multiple(self):
+        node = TextNode(
+            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)",
+            "text",
+        )
+
+        result = [
+            TextNode("This is text with a ", "text"),
+            TextNode("rick roll", "image", "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and ", "text"),
+            TextNode("obi wan", "image", "https://i.imgur.com/fJRm4Vk.jpeg"),
+        ]
+
+        self.assertListEqual(result, split_nodes_images([node]))
+
+    def test_images_single(self):
+        node = TextNode(
+            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif)",
+            "text",
+        )
+
+        result = [
+            TextNode("This is text with a ", "text"),
+            TextNode("rick roll", "image", "https://i.imgur.com/aKaOqIh.gif"),
+        ]
+
+        self.assertListEqual(result, split_nodes_images([node]))
+
+    def test_images_only(self):
+        node = TextNode(
+            "![rick roll](https://i.imgur.com/aKaOqIh.gif)",
+            "text",
+        )
+
+        result = [
+            TextNode("rick roll", "image", "https://i.imgur.com/aKaOqIh.gif"),
+        ]
+
+        self.assertListEqual(result, split_nodes_images([node]))
+
+
+class TestSplitNodesLinks(unittest.TestCase):
+    def test_link_multiple(self):
+        node = TextNode(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+            "text",
+        )
+
+        result = [
+            TextNode("This is text with a link ", "text"),
+            TextNode("to boot dev", "link", "https://www.boot.dev"),
+            TextNode(" and ", "text"),
+            TextNode("to youtube", "link", "https://www.youtube.com/@bootdotdev"),
+        ]
+
+        self.assertListEqual(result, split_nodes_link([node]))
+
+    def test_link_single(self):
+        node = TextNode(
+            "This is text with a link [to boot dev](https://www.boot.dev)",
+            "text",
+        )
+
+        result = [
+            TextNode("This is text with a link ", "text"),
+            TextNode("to boot dev", "link", "https://www.boot.dev"),
+        ]
+
+        self.assertListEqual(result, split_nodes_link([node]))
+
+    def test_link_only(self):
+        node = TextNode("[to boot dev](https://www.boot.dev)", "text")
+
+        result = [
+            TextNode("to boot dev", "link", "https://www.boot.dev"),
+        ]
+
+        self.assertListEqual(result, split_nodes_link([node]))
