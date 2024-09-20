@@ -3,6 +3,7 @@ import unittest
 from parse_markdown import (
     extract_markdown_images,
     extract_markdown_links,
+    markdown_to_blocks,
     split_nodes_images,
     split_nodes_link,
     split_nodes_with_delimiter,
@@ -260,3 +261,43 @@ class TestTextToTextNode(unittest.TestCase):
         ]
 
         self.assertListEqual(result, text_to_textnodes(text))
+
+
+class TestMDBlockToText(unittest.TestCase):
+    def test_single_block(self):
+        text = """# Heading
+
+        Paragraph
+        """
+
+        res = ["# Heading", "Paragraph"]
+
+        self.assertListEqual(res, markdown_to_blocks(text))
+
+    def test_multiple_returns(self):
+        text = """# Heading
+
+
+        Paragraph
+        """
+
+        res = ["# Heading", "Paragraph"]
+
+        self.assertListEqual(res, markdown_to_blocks(text))
+
+    def test_multiple_blocks_with_multiple_returns(self):
+        text = """# Heading
+
+
+
+
+        Paragraph 1
+
+
+
+        Paragraph 2
+        """
+
+        res = ["# Heading", "Paragraph 1", "Paragraph 2"]
+
+        self.assertListEqual(res, markdown_to_blocks(text))
