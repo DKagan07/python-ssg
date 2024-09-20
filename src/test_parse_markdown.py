@@ -6,6 +6,7 @@ from parse_markdown import (
     split_nodes_images,
     split_nodes_link,
     split_nodes_with_delimiter,
+    text_to_textnodes,
 )
 from textnode import TextNode
 
@@ -215,3 +216,47 @@ class TestSplitNodesLinks(unittest.TestCase):
         ]
 
         self.assertListEqual(result, split_nodes_link([node]))
+
+
+class TestTextToTextNode(unittest.TestCase):
+    def test_bold_text(self):
+        text = "This is a **bolded** word."
+
+        result = [
+            TextNode("This is a ", "text"),
+            TextNode("bolded", "bold"),
+            TextNode(" word.", "text"),
+        ]
+
+        self.assertListEqual(result, text_to_textnodes(text))
+
+    def test_italic_and_bold_text(self):
+        text = "This is a **bold** and *italic* word."
+
+        result = [
+            TextNode("This is a ", "text"),
+            TextNode("bold", "bold"),
+            TextNode(" and ", "text"),
+            TextNode("italic", "italic"),
+            TextNode(" word.", "text"),
+        ]
+
+        self.assertListEqual(result, text_to_textnodes(text))
+
+    def test_all(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+
+        result = [
+            TextNode("This is ", "text", None),
+            TextNode("text", "bold", None),
+            TextNode(" with an ", "text", None),
+            TextNode("italic", "italic", None),
+            TextNode(" word and a ", "text", None),
+            TextNode("code block", "code", None),
+            TextNode(" and an ", "text", None),
+            TextNode("obi wan image", "image", "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", "text", None),
+            TextNode("link", "link", "https://boot.dev"),
+        ]
+
+        self.assertListEqual(result, text_to_textnodes(text))
